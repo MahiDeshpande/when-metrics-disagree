@@ -662,22 +662,22 @@
     {
       dist: 'translation', idx: 0, img: 'img_ref',
       title: 'PSNR panics over a 1-pixel shift',
-      text: (s) => `Move the image one pixel to the right. Nothing visible changes, yet PSNR drops to ${fmt('psnr', s.psnr.v)} dB and SSIM to ${fmt('ssim', s.ssim.v)} — both in the <em>Noticeable</em> tier. LPIPS (${fmt('lpips_alex', s.lpips_alex.v)}) and TPIPS (${fmt('tpips', s.tpips.v)}) correctly call it indistinguishable. Pixel-aligned math cannot tell “moved” from “damaged”.`,
+      text: (s) => `Move the image one pixel to the right. Nothing visible changes, yet PSNR drops to ${fmt('psnr', s.psnr.v)} dB and SSIM to ${fmt('ssim', s.ssim.v)}, both in the <em>Noticeable</em> tier. LPIPS (${fmt('lpips_alex', s.lpips_alex.v)}) and TPIPS (${fmt('tpips', s.tpips.v)}) correctly call it indistinguishable. Pixel-aligned math cannot tell “moved” from “damaged”.`,
     },
     {
       dist: 'brightness', idx: 0, img: 'ILSVRC2012_val_00000003',
       title: 'Brightness shifts trick pixel-wise math',
-      text: (s) => `Dimming to 70% leaves every object perfectly recognizable, but PSNR collapses to ${fmt('psnr', s.psnr.v)} dB — <em>Heavy</em> degradation, worse than σ = 20 noise. SSIM, which normalizes local luminance, stays at ${fmt('ssim', s.ssim.v)}, and both deep metrics stay near zero.`,
+      text: (s) => `Dimming to 70% leaves every object perfectly recognizable, but PSNR collapses to ${fmt('psnr', s.psnr.v)} dB, a <em>Heavy</em> degradation, worse than σ = 20 noise. SSIM, which normalizes local luminance, stays at ${fmt('ssim', s.ssim.v)}, and both deep metrics stay near zero.`,
     },
     {
       dist: 'saturation', idx: 0, img: 'ILSVRC2012_val_00000008',
       title: 'SSIM barely notices color disappearing',
-      text: (s) => `Fully desaturating an image is an obvious change to any viewer. SSIM still reports ${fmt('ssim', s.ssim.v)} (<em>Slight</em>), because its structure term is dominated by luminance. TPIPS jumps to ${fmt('tpips', s.tpips.v)} — the largest TPIPS value of any mild distortion — flagging a real semantic change.`,
+      text: (s) => `Fully desaturating an image is an obvious change to any viewer. SSIM still reports ${fmt('ssim', s.ssim.v)} (<em>Slight</em>), because its structure term is dominated by luminance. TPIPS jumps to ${fmt('tpips', s.tpips.v)}, the largest TPIPS value of any mild distortion, flagging a real semantic change.`,
     },
     {
       dist: 'gaussian_noise', idx: 3, img: 'ILSVRC2012_val_00001403',
       title: 'TPIPS shrugs off heavy noise',
-      text: (s) => `At σ = 40, the image is visibly grainy: SSIM falls to ${fmt('ssim', s.ssim.v)} and LPIPS-Alex climbs to ${fmt('lpips_alex', s.lpips_alex.v)}, both <em>Heavy</em>. TPIPS reports only ${fmt('tpips', s.tpips.v)} (<em>Slight</em>) — the content is still a bus on a street, so the semantic judge is not worried. Invariance is a feature until it isn't.`,
+      text: (s) => `At σ = 40, the image is visibly grainy: SSIM falls to ${fmt('ssim', s.ssim.v)} and LPIPS-Alex climbs to ${fmt('lpips_alex', s.lpips_alex.v)}, both <em>Heavy</em>. TPIPS reports only ${fmt('tpips', s.tpips.v)} (<em>Slight</em>). The content is still a bus on a street, so the semantic judge is not worried. Invariance is a feature until it isn't.`,
     },
   ];
 

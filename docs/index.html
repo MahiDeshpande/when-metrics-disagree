@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Decoding Image Quality: Why Your Metrics Are Lying to You</title>
   <meta name="description" content="A unified translation table that maps PSNR, SSIM, LPIPS, and TPIPS scores to intuitive perceptual quality tiers across 10 distortion types and 12 images." />
+  <meta name="author" content="Mahi Deshpande, Kent Gauen, Merve Kocabas" />
   <meta property="og:title" content="Decoding Image Quality: Why Your Metrics Are Lying to You" />
-  <meta property="og:description" content="PSNR, SSIM, LPIPS and TPIPS under 10 controlled distortions — and a unified table that translates their numbers into perceptual quality tiers." />
+  <meta property="og:description" content="PSNR, SSIM, LPIPS and TPIPS under 10 controlled distortions, with an interactive table that compares their blind spots." />
   <meta property="og:type" content="article" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%234f46e5'/><path d='M8 22l5-7 4 5 3-4 4 6' stroke='white' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
 
@@ -91,12 +92,9 @@
           perceptual quality tiers you can actually reason about.
         </p>
         <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-zinc-500 dark:text-zinc-400">
-          <div class="flex items-center gap-3">
-            <span class="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-emerald-500 text-white font-semibold flex items-center justify-center">M</span>
-            <div>
-              <div class="font-medium text-zinc-900 dark:text-zinc-100">Mahi Deshpande</div>
-              <div class="text-xs">Research post</div>
-            </div>
+          <div>
+            <div class="font-medium text-zinc-900 dark:text-zinc-100">By Mahi Deshpande, Kent Gauen, and Merve Kocabas</div>
+            <div class="text-xs">Research post</div>
           </div>
           <span class="hidden sm:inline h-4 w-px bg-zinc-300 dark:bg-zinc-700"></span>
           <span>September 2026</span>
@@ -124,13 +122,13 @@
           <div class="heil-num">01</div>
           <h3>What are we trying to do?</h3>
           <p>Build a <strong>universal translation table</strong> that maps abstract metric numbers (PSNR, SSIM, LPIPS, TPIPS)
-            into intuitive perceptual quality tiers on a single <strong>0–100%</strong> scale — so “0.12 LPIPS” and “27 dB”
+            into intuitive perceptual quality tiers on a single <strong>0–100%</strong> scale, so “0.12 LPIPS” and “27 dB”
             can finally be compared in the same sentence.</p>
         </article>
         <article class="card heil">
           <div class="heil-num">02</div>
           <h3>How is it done today, and what are the limits?</h3>
-          <p>Researchers report raw, isolated numbers. But a <strong>25 dB PSNR means nothing on its own</strong> — it behaves
+          <p>Researchers report raw, isolated numbers. But a <strong>25 dB PSNR means nothing on its own</strong>. It behaves
             entirely differently under Gaussian blur than under Gaussian noise or a one-pixel shift. Comparing numbers across
             distortions walks you straight into <em>alignment traps</em>.</p>
         </article>
@@ -157,7 +155,7 @@
         </p>
         <p>
           When a metric is used for <em>evaluation</em>, a silent failure misranks models. When it is used for
-          <em>training</em> (as a loss or a reward), the optimizer happily exploits the blind spot — producing images that
+          <em>training</em> (as a loss or a reward), the optimizer happily exploits the blind spot, producing images that
           score well and look wrong. Either way, the problem is the same: we treat the numbers as if they carried meaning on
           their own.
         </p>
@@ -165,9 +163,9 @@
           <div class="callout-title">The big idea</div>
           <p class="!mb-0">
             Assign <strong>concrete semantic meaning to numerical ranges</strong>. If every metric score can be translated into
-            the same four perceptual tiers — <span class="tier-pill tier-0">Indistinguishable</span>
+            the same four perceptual tiers: <span class="tier-pill tier-0">Indistinguishable</span>
             <span class="tier-pill tier-1">Slight</span> <span class="tier-pill tier-2">Noticeable</span>
-            <span class="tier-pill tier-3">Heavy</span> — then we can measure, distortion by distortion, <em>when metrics agree,
+            <span class="tier-pill tier-3">Heavy</span>. Then we can measure, distortion by distortion, <em>when metrics agree,
             when they disagree, and which one is lying</em>.
           </p>
         </div>
@@ -206,7 +204,7 @@
         <div class="section-label">2 · Related Work</div>
         <h2 class="section-title">The evolution of failure</h2>
         <p>
-          The history of image quality metrics is a history of each generation patching the blind spots of the last — and
+          The history of image quality metrics is a history of each generation patching the blind spots of the last and
           introducing new ones.
         </p>
         <ol class="timeline not-prose">
@@ -215,32 +213,34 @@
             <div class="tl-body">
               <h4>PSNR / MSE</h4>
               <p>Pure signal processing: treat every pixel as independent and equally important. Easy to compute and
-                differentiate, which is why it never went away — and why its failure on perceptually irrelevant changes
+                differentiate, which is why it never went away, and why its failure on perceptually irrelevant changes
                 (shifts, global brightness) is so widespread.</p>
             </div>
           </li>
           <li>
             <div class="tl-year">2004</div>
             <div class="tl-body">
-              <h4>SSIM <span class="cite">Wang et al., 2004</span></h4>
+              <h4>SSIM <span class="cite"><a href="https://doi.org/10.1109/TIP.2003.819861" target="_blank" rel="noopener">Wang et al., 2004 [1]</a></span></h4>
               <p>Built explicitly to fix PSNR’s blind spots by modelling the visual system’s sensitivity to <em>structure</em>
-                rather than absolute error. A major step — but it still compares co-located windows, so geometric
+                rather than absolute error. The authors note that “MSE does not correlate well with perceived visual quality” [1].
+                SSIM was a major step, but it still compares co-located windows, so geometric
                 misalignment breaks it, and it is largely color-agnostic.</p>
             </div>
           </li>
           <li>
             <div class="tl-year">2018</div>
             <div class="tl-body">
-              <h4>LPIPS <span class="cite">Zhang et al., 2018</span></h4>
+              <h4>LPIPS <span class="cite"><a href="https://openaccess.thecvf.com/content_cvpr_2018/html/Zhang_The_Unreasonable_Effectiveness_CVPR_2018_paper.html" target="_blank" rel="noopener">Zhang et al., 2018 [2]</a></span></h4>
               <p>“The Unreasonable Effectiveness of Deep Features as a Perceptual Metric.” Compares images in the feature space of
                 pretrained CNNs (AlexNet, VGG), linearly calibrated on human two-alternative forced-choice judgments. Far more
-                tolerant of small shifts — but the answer depends on the backbone you pick.</p>
+                tolerant of small shifts, but the answer depends on the backbone you pick. The authors caution that “the very
+                notion of visual similarity is often subjective” [2].</p>
             </div>
           </li>
           <li>
             <div class="tl-year">2026</div>
             <div class="tl-body">
-              <h4>TPIPS <span class="cite">Wang et al., 2026</span></h4>
+              <h4>TPIPS <span class="cite"><a href="https://arxiv.org/abs/2607.18237" target="_blank" rel="noopener">Wang et al., 2026 [3]</a></span></h4>
               <p>“The Many Senses of Visual Similarity.” Uses a vision-language model to compute an embedding distance that can
                 be conditioned on <em>which sense</em> of similarity you care about (we use the <code>overall</code> factor).
                 Excellent at semantic invariance; as we will see, sometimes <em>too</em> invariant to low-level damage.</p>
@@ -254,10 +254,12 @@
         <div class="section-label">3 · Methodology</div>
         <h2 class="section-title">The engineering process</h2>
         <p>
-          Everything in this post was produced by a single, reproducible Jupyter pipeline (one notebook per reference image, all
-          in the <a href="https://github.com/MahiDeshpande/when-metrics-disagree" target="_blank" rel="noopener">repository</a>).
-          The goal: make four fundamentally different metric families evaluate the <em>exact same</em> image pair under the
-          <em>exact same</em> conditions.
+          This study uses a reproducible Jupyter pipeline, with one notebook per reference image, available in the
+          <a href="https://github.com/MahiDeshpande/when-metrics-disagree" target="_blank" rel="noopener">repository</a>.
+          Each image pair is evaluated by four different metric families under the same conditions. We use “Image Quality
+          Assessment” (IQA) for this research area. Prior datasets such as TID2013, LIVE, and KADID-10k compare image
+          distortions with human opinion scores or judgments [5–7]. They motivate grounding quality evaluation in human
+          perception, but they do not prescribe the cutoffs in our table.
         </p>
       </section>
     </div>
@@ -273,32 +275,6 @@
         <div class="pipe-step"><span>4</span><h4>Translate</h4><p>Map every score to a 0–100% quality tier</p></div>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-5 mt-10">
-        <div class="card p-6">
-          <div class="card-kicker">Hardware &amp; environment</div>
-          <h4 class="card-h">Fitting an 8B-parameter judge</h4>
-          <p class="card-p">Google Colab on NVIDIA <strong>L4 / A100</strong> GPUs. LPIPS runs on the GPU in float32. The
-            TPIPS embedder (Qwen3-VL-8B + LoRA, ~8.2B params) is loaded under a temporary half-precision default dtype —
-            <code>bfloat16</code> on CPU in the first run, <code>float16</code> on CUDA in the dataset runs — with
-            <code>torchao</code> installed for quantization kernels.</p>
-        </div>
-        <div class="card p-6">
-          <div class="card-kicker">Metric extraction</div>
-          <h4 class="card-h">One helper, every metric</h4>
-          <p class="card-p">A single <code>compute_all_metrics()</code> scores each pair: PSNR/SSIM on the raw float arrays,
-            LPIPS on <code>1×3×H×W</code> tensors rescaled to [−1, 1], TPIPS on 8-bit PIL images. <code>plot_sweep_grid()</code>
-            renders the reference/distorted grid and the score table for each sweep.</p>
-        </div>
-        <div class="card p-6">
-          <div class="card-kicker">Precision handling</div>
-          <h4 class="card-h">No more dtype crashes</h4>
-          <p class="card-p">Half-precision defaults leaked into LPIPS and crashed it, so LPIPS is explicitly cast back to
-            <code>float32</code>, and the TPIPS call is wrapped in <code>torch.inference_mode()</code> +
-            <code>torch.autocast</code> to bridge 32-bit PIL preprocessing with the 16-bit model. Scores are pulled out with
-            <code>.item()</code> and rounded.</p>
-        </div>
-      </div>
-
       <h3 class="sub-h mt-14">Seven distortion families, ten tests</h3>
       <div class="table-wrap mt-4">
         <table class="data-table" id="distortionTable">
@@ -306,7 +282,7 @@
           <tbody>
             <tr><td><span class="fam fam-noise">Noise</span></td><td>Gaussian Noise (clipped)</td><td class="mono">σ = 5, 10, 20, 40</td><td>High-frequency additive noise</td></tr>
             <tr><td><span class="fam fam-blur">Blur</span></td><td>Gaussian Blur</td><td class="mono">r = 1, 2, 4, 8 px</td><td>Loss of fine detail</td></tr>
-            <tr><td><span class="fam fam-compression">Compression</span></td><td>JPEG</td><td class="mono">Q = 90, 70, 40, 10</td><td>8×8 block artifacts, ringing</td></tr>
+            <tr><td><span class="fam fam-compression">Compression</span></td><td>JPEG</td><td class="mono">Q = 90, 70, 40, 10</td><td>8×8 blocking artifacts and high-frequency distortion</td></tr>
             <tr><td><span class="fam fam-translation">Translation</span></td><td>Spatial Translation</td><td class="mono">1, 2, 4, 8 px</td><td>Pixel alignment (“the alignment trap”)</td></tr>
             <tr><td><span class="fam fam-photometric">Photometric</span></td><td>Brightness · Contrast · Saturation · Hue</td><td class="mono">×0.7–1.3 · ×0.0–1.5 · 10–90°</td><td>Global intensity &amp; color shifts</td></tr>
             <tr><td><span class="fam fam-rotation">Rotation</span></td><td>Spatial Rotation</td><td class="mono">1°, 3°, 5°, 10°</td><td>Rotational invariance, resampling</td></tr>
@@ -315,84 +291,9 @@
         </table>
       </div>
 
-      <h3 class="sub-h mt-14">The code</h3>
-      <div class="code-tabs mt-4" id="codeTabs">
-        <div class="code-tab-bar">
-          <button class="code-tab active" data-tab="setup">setup.py — model loading</button>
-          <button class="code-tab" data-tab="metrics">compute_all_metrics()</button>
-          <button class="code-tab" data-tab="distort">distortions.py</button>
-        </div>
-<pre class="code-pane" data-pane="setup"><code class="language-python">import gc, torch, lpips, tpips
-from skimage.metrics import peak_signal_noise_ratio as compute_psnr
-from skimage.metrics import structural_similarity as compute_ssim
-
-gc.collect()
-torch.cuda.empty_cache()
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# LPIPS: two CNN backbones on the GPU
-lpips_alex = lpips.LPIPS(net="alex").to(device).eval()
-lpips_vgg  = lpips.LPIPS(net="vgg").to(device).eval()
-
-# TPIPS: ~8.2B-param Qwen3-VL embedder, loaded under a half-precision default
-torch.set_default_dtype(torch.float16)      # bfloat16 when loading to CPU
-tpips_model = tpips.load_model("embedding", device="cuda")
-torch.set_default_dtype(torch.float32)      # restore for everything else
-tpips_model.eval()</code></pre>
-<pre class="code-pane hidden" data-pane="metrics"><code class="language-python">def compute_all_metrics(img_ref_np, img_dist_np, factor="overall"):
-    """PSNR, SSIM, LPIPS (Alex &amp; VGG) and TPIPS for one 512x512x3 pair in [0, 1]."""
-    # 1. Classical metrics on raw float arrays
-    score_psnr = compute_psnr(img_ref_np, img_dist_np, data_range=1.0)
-    score_ssim = compute_ssim(img_ref_np, img_dist_np, channel_axis=2, data_range=1.0)
-
-    # 2. LPIPS on [-1, 1] tensors, forced to float32 to avoid precision crashes
-    to_t = lambda x: torch.tensor(x).permute(2, 0, 1).unsqueeze(0).float().to(device) * 2 - 1
-    with torch.no_grad():
-        lpips_alex.to(torch.float32); lpips_vgg.to(torch.float32)
-        score_lpips_alex = lpips_alex(to_t(img_ref_np), to_t(img_dist_np)).item()
-        score_lpips_vgg  = lpips_vgg(to_t(img_ref_np), to_t(img_dist_np)).item()
-
-    # 3. TPIPS on 8-bit PIL images; autocast bridges fp32 preprocessing and the fp16 model
-    ref_pil  = Image.fromarray((img_ref_np * 255).astype(np.uint8))
-    dist_pil = Image.fromarray((img_dist_np * 255).astype(np.uint8))
-    with torch.inference_mode(), torch.autocast(device_type="cuda", dtype=torch.float16):
-        score_tpips = tpips_model.distance(ref_pil, dist_pil, factor=factor)
-        if isinstance(score_tpips, torch.Tensor):
-            score_tpips = score_tpips.item()
-
-    return {
-        "PSNR (↑)": round(score_psnr, 2),
-        "SSIM (↑)": round(score_ssim, 4),
-        "LPIPS-Alex (↓)": round(score_lpips_alex, 4),
-        "LPIPS-VGG (↓)": round(score_lpips_vgg, 4),
-        "TPIPS Distance (↓)": round(score_tpips, 4),
-    }</code></pre>
-<pre class="code-pane hidden" data-pane="distort"><code class="language-python">def apply_gaussian_noise(img, sigma=10):
-    return np.clip(img + np.random.normal(0, sigma / 255.0, img.shape), 0.0, 1.0)
-
-def apply_gaussian_blur(img, radius=1):
-    k = radius * 2 + 1
-    return cv2.GaussianBlur(img, (k, k), 0)
-
-def apply_translation(img, shift_pixels=2):
-    rows, cols, _ = img.shape
-    M = np.float32([[1, 0, shift_pixels], [0, 1, 0]])
-    return cv2.warpAffine(img, M, (cols, rows))          # zero-padded boundary
-
-def apply_crop_resize(img, crop_percent=0):
-    h, w, _ = img.shape
-    ch, cw = int(h * crop_percent / 100), int(w * crop_percent / 100)
-    return cv2.resize(img[ch:h - ch, cw:w - cw], (w, h))
-
-def apply_color_shift(img, shift_deg=0):
-    hsv = cv2.cvtColor((img * 255).astype(np.uint8), cv2.COLOR_RGB2HSV)
-    hsv[:, :, 0] = (hsv[:, :, 0].astype(int) + int(shift_deg / 2)) % 180
-    return cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB) / 255.0
-
-# Every test runs through the same sweep helper:
-df_shift = plot_sweep_grid(img_ref, apply_translation, levels=[1, 2, 4, 8],
-                           param_name="Shift (px)", exp_title="Spatial Translation")</code></pre>
-      </div>
+      <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-6">
+        The notebooks document the full model setup and scoring implementation for reproduction.
+      </p>
     </div>
 
     <!-- ============================== EXPLORER ============================== -->
@@ -451,7 +352,7 @@ df_shift = plot_sweep_grid(img_ref, apply_translation, levels=[1, 2, 4, 8],
             <div id="viewDiff" class="hidden">
               <figure class="img-fig mx-auto max-w-md">
                 <canvas id="diffCanvas" width="242" height="241"></canvas>
-                <figcaption>|Original − Distorted| amplified 4× — what PSNR “sees”</figcaption>
+                <figcaption>|Original − Distorted| amplified 4×, what PSNR “sees”</figcaption>
               </figure>
             </div>
           </div>
@@ -482,7 +383,7 @@ df_shift = plot_sweep_grid(img_ref, apply_translation, levels=[1, 2, 4, 8],
             <div class="relative h-72"><canvas id="sweepChart"></canvas></div>
           </div>
           <div class="lg:col-span-2 card p-5">
-            <div class="ctrl-label">Raw scores — <span id="tableTitle"></span></div>
+            <div class="ctrl-label">Raw scores: <span id="tableTitle"></span></div>
             <div class="table-wrap !border-0">
               <table class="data-table compact" id="sweepTable"></table>
             </div>
@@ -497,10 +398,21 @@ df_shift = plot_sweep_grid(img_ref, apply_translation, levels=[1, 2, 4, 8],
       <h2 class="section-title">The Metric Translation Table</h2>
       <div class="max-w-3xl prose-blog">
         <p>
-          The translation starts from a tier reference distilled from the IQA literature: four perceptual bands, each with a
-          score range per metric. We turn those bands into a continuous <strong>Perceptual Quality Index (PQI)</strong> by
+          The table starts from practical score ranges and connects them to four perceptual bands. We turn those anchors into a
+          continuous <strong>Perceptual Quality Index (PQI)</strong> by
           piecewise-linear interpolation, so every tier occupies exactly one quarter of the 0–100% scale. Then we apply it to
           every measurement we collected.
+        </p>
+        <p>
+          The percentage normalization is a custom design choice introduced in this project for easier interpretation and
+          cross-metric comparison. It is not an established academic standard, and the resulting PQI should not be mistaken
+          for a human-rated probability or a universal measure of quality. The underlying raw scores remain available.
+        </p>
+        <p>
+          Human-rated datasets such as TID2013, LIVE, and KADID-10k show how image-quality research can compare metric
+          behavior with human opinion across controlled distortions [5–7]. They motivate perceptually grounded evaluation;
+          they do not define the exact thresholds below. Our tier cutoffs are study-specific heuristics that need calibration
+          against human ratings before they can be treated as validated thresholds.
         </p>
       </div>
 
@@ -518,9 +430,10 @@ df_shift = plot_sweep_grid(img_ref, apply_translation, levels=[1, 2, 4, 8],
               </tbody>
             </table>
           </div>
-          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-3 leading-relaxed">Sources: “PSNR, SSIM, and LPIPS Explained
-            Simply” (Medium, 2026); “Making Sense of PSNR, SSIM, VMAF” (Visionular, 2024); Wang et al. (2026) for TPIPS. TPIPS
-            bands are approximations — VLM distances cluster lower than LPIPS for similar distortions.</p>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-3 leading-relaxed">The PSNR, SSIM, and LPIPS anchors are
+            working ranges informed by established metric literature [1, 2] and perceptual quality datasets [5–7], not
+            published universal thresholds. TPIPS anchors are exploratory approximations informed by its authors’ work [3].
+            These cutoffs have not yet been fitted to human ratings.</p>
         </div>
         <div class="card p-5">
           <div class="ctrl-label">How a score becomes a percentage</div>
@@ -552,7 +465,7 @@ df_shift = plot_sweep_grid(img_ref, apply_translation, levels=[1, 2, 4, 8],
         </div>
         <div class="flex flex-wrap items-center justify-between gap-3 mt-3 text-xs text-zinc-500 dark:text-zinc-400">
           <span id="masterCount"></span>
-          <span>Cell color = tier for that metric · <strong>Consensus</strong> = median PQI of the 5 metrics · <strong>Spread</strong> = max − min PQI (disagreement). Click a header to sort.</span>
+          <span>Cell color = tier for that metric · <strong>Consensus</strong> = median PQI of the 5 metrics · <strong>Spread</strong> = max - min PQI (disagreement). Click a header to sort.</span>
         </div>
       </div>
     </section>
@@ -606,7 +519,7 @@ df_shift = plot_sweep_grid(img_ref, apply_translation, levels=[1, 2, 4, 8],
         <li><strong>SSIM is nearly color-blind.</strong> Converting to grayscale or rotating hue by 60° still lands SSIM in the
           <em>Slight</em> tier; TPIPS correctly flags both as noticeable.</li>
         <li><strong>TPIPS can be too forgiving of low-level damage.</strong> At σ = 40 noise, LPIPS-Alex is deep in the
-          <em>Heavy</em> tier while TPIPS still says <em>Slight</em> — semantic invariance cuts both ways.</li>
+          <em>Heavy</em> tier while TPIPS still says <em>Slight</em>. Semantic invariance cuts both ways.</li>
         <li><strong>Backbones matter.</strong> LPIPS-VGG is consistently harsher than LPIPS-Alex on geometric changes and JPEG;
           report which one you used.</li>
         <li><strong>Use a panel, not a judge.</strong> Translate each metric to a shared scale and look at the
@@ -621,25 +534,40 @@ df_shift = plot_sweep_grid(img_ref, apply_translation, levels=[1, 2, 4, 8],
         random draw per noise level, and TPIPS is evaluated only with the <code>overall</code> factor. Iso-PSNR calibration,
         heatmap clustering, and rank-disagreement mining across larger datasets are on the roadmap.
       </p>
+      <p>
+        Metrics can lie because every score reflects the assumptions and blind spots of the data and model used to create it.
+        Use this interactive tool as a hands-on exercise in building intuition for reading the computer vision community’s
+        most widely used image-quality metrics. Compare their outputs with the visible distortions, then ask what each metric
+        overlooks.
+      </p>
 
       <h3>References</h3>
       <ol class="refs not-prose">
         <li>Z. Wang, A. C. Bovik, H. R. Sheikh, E. P. Simoncelli. <em>Image Quality Assessment: From Error Visibility to
-          Structural Similarity.</em> IEEE Transactions on Image Processing, 2004.</li>
+          Structural Similarity.</em> IEEE Transactions on Image Processing, 2004.
+          <a href="https://doi.org/10.1109/TIP.2003.819861" target="_blank" rel="noopener">doi:10.1109/TIP.2003.819861</a></li>
         <li>R. Zhang, P. Isola, A. A. Efros, E. Shechtman, O. Wang. <em>The Unreasonable Effectiveness of Deep Features as a
-          Perceptual Metric.</em> CVPR, 2018.</li>
-        <li>S.-Y. Wang et al. <em>TPIPS: The Many Senses of Visual Similarity.</em> Adobe Research, 2026.
-          <a href="https://github.com/adobe-research/TPIPS" target="_blank" rel="noopener">github.com/adobe-research/TPIPS</a></li>
-        <li>O. Russakovsky et al. <em>ImageNet Large Scale Visual Recognition Challenge.</em> IJCV, 2015 (ILSVRC2012 validation images).</li>
-        <li><em>PSNR, SSIM, and LPIPS Explained Simply.</em> Medium, 2026.</li>
-        <li><em>Making Sense of PSNR, SSIM, VMAF.</em> Visionular, 2024.</li>
+          Perceptual Metric.</em> CVPR, 2018.
+          <a href="https://openaccess.thecvf.com/content_cvpr_2018/html/Zhang_The_Unreasonable_Effectiveness_CVPR_2018_paper.html" target="_blank" rel="noopener">Open-access paper</a></li>
+        <li>S.-Y. Wang et al. <em>The Many Senses of Visual Similarity: A Text-Prompted Image Perceptual Metric.</em> 2026.
+          <a href="https://arxiv.org/abs/2607.18237" target="_blank" rel="noopener">arXiv:2607.18237</a> ·
+          <a href="https://github.com/adobe-research/TPIPS" target="_blank" rel="noopener">TPIPS code</a></li>
+        <li>O. Russakovsky et al. <em>ImageNet Large Scale Visual Recognition Challenge.</em> IJCV, 2015 (ILSVRC2012 validation images).
+          <a href="https://doi.org/10.1007/s11263-015-0816-y" target="_blank" rel="noopener">doi:10.1007/s11263-015-0816-y</a></li>
+        <li>N. Ponomarenko et al. <em>Color image database TID2013: Peculiarities and preliminary results.</em> 2013.
+          <a href="https://www.researchgate.net/publication/259628881_Color_image_database_TID2013_Peculiarities_and_preliminary_results" target="_blank" rel="noopener">TID2013 paper</a></li>
+        <li>LIVE. <em>Image Quality Assessment Database, Release 2.</em>
+          <a href="https://live.ece.utexas.edu/research/quality/subjective.htm" target="_blank" rel="noopener">Database and methodology</a></li>
+        <li>H. Lin, V. Hosu, D. Saupe. <em>KADID-10k: A Large-scale Artificially Distorted IQA Database.</em> QoMEX, 2019.
+          <a href="https://doi.org/10.1109/QoMEX.2019.8743252" target="_blank" rel="noopener">doi:10.1109/QoMEX.2019.8743252</a> ·
+          <a href="https://database.mmsp-kn.de/kadid-10k-database.html" target="_blank" rel="noopener">Dataset page</a></li>
       </ol>
 
       <h3>Cite this post</h3>
 <pre class="not-prose rounded-xl overflow-x-auto text-sm"><code class="language-bibtex">@misc{deshpande2026decoding,
   title  = {Decoding Image Quality: Why Your Metrics Are Lying to You
             (And How We Built a Unified Translation Table)},
-  author = {Deshpande, Mahi},
+  author = {Deshpande, Mahi and Gauen, Kent and Kocabas, Merve},
   year   = {2026},
   url    = {https://mahideshpande.github.io/when-metrics-disagree/}
 }</code></pre>
@@ -648,7 +576,7 @@ df_shift = plot_sweep_grid(img_ref, apply_translation, levels=[1, 2, 4, 8],
 
   <footer class="border-t border-zinc-200 dark:border-zinc-800">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row gap-3 items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">
-      <span>© 2026 Mahi Deshpande · When Metrics Disagree</span>
+      <span>© 2026 Mahi Deshpande, Kent Gauen &amp; Merve Kocabas · When Metrics Disagree</span>
       <span>Data: <a class="underline decoration-zinc-300 dark:decoration-zinc-700 hover:text-indigo-600" href="data.json">data.json</a> · Built with HTML, Tailwind &amp; vanilla JS</span>
     </div>
   </footer>
