@@ -349,3 +349,55 @@ code:not(.hljs) {
 .tier-text-3 { color: rgb(225 29 72) !important; }
 .card, .grid > * { min-width: 0; }
 .dark { color-scheme: dark; }
+
+/* Keep reproducibility details outside the main narrative. */
+.implementation-details {
+  border: 1px solid rgb(228 228 231);
+  border-radius: 1rem;
+  background: rgb(250 250 250);
+}
+.dark .implementation-details { border-color: rgb(39 39 42); background: rgb(24 24 27); }
+.implementation-details summary {
+  cursor: pointer;
+  padding: 1rem 1.25rem;
+  font-weight: 700;
+  color: rgb(24 24 27);
+}
+.dark .implementation-details summary { color: white; }
+.implementation-details[open] summary { border-bottom: 1px solid rgb(228 228 231); }
+.dark .implementation-details[open] summary { border-bottom-color: rgb(39 39 42); }
+.implementation-details > .implementation-intro,
+.implementation-details > .grid { margin-left: 1.25rem; margin-right: 1.25rem; }
+.implementation-details > .grid { padding-bottom: 1.25rem; }
+.implementation-intro { color: rgb(113 113 122); font-size: .875rem; }
+.dark .implementation-intro { color: rgb(161 161 170); }
+
+/* ---------- TPIPS multi-prompt appendix ---------- */
+.btn-link { display:inline-flex; align-items:center; padding:.55rem .85rem; border-radius:.65rem; border:1px solid rgb(199 210 254); background:white; color:rgb(67 56 202); font-size:.82rem; font-weight:600; }
+.btn-link:hover { border-color:rgb(129 140 248); background:rgb(238 242 255); }
+.dark .btn-link { border-color:rgba(129,140,248,.35); background:rgb(24 24 27); color:rgb(199 210 254); }
+.dark .btn-link:hover { background:rgba(99,102,241,.15); }
+.tpips-method { padding:0; overflow:hidden; }
+.tpips-method summary { cursor:pointer; padding:1rem 1.25rem; font-weight:700; }
+.tpips-method[open] summary { border-bottom:1px solid rgb(228 228 231); }
+.dark .tpips-method[open] summary { border-bottom-color:rgb(39 39 42); }
+.tpips-method-grid { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,2fr); gap:1.5rem; padding:1.25rem; }
+.tpips-method-grid h3 { font-size:.95rem; font-weight:700; }
+.tpips-method-grid ul { margin-top:.5rem; display:grid; gap:.35rem; }
+.tpips-prompt-list { margin-top:.55rem; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.45rem .8rem; }
+.tpips-prompt-list div { display:flex; flex-direction:column; min-width:0; padding:.55rem .65rem; border-radius:.65rem; background:rgb(244 244 245); }
+.dark .tpips-prompt-list div { background:rgb(39 39 42); }
+.tpips-prompt-list b { font-size:.75rem; }
+.tpips-prompt-list span { margin-top:.15rem; font-size:.72rem; color:rgb(113 113 122); }
+.tpips-severity-control { width:min(100%,28rem); }
+.tpips-image-card { overflow:hidden; border-radius:.75rem; border:1px solid rgb(228 228 231); background:rgb(244 244 245); }
+.dark .tpips-image-card { border-color:rgb(39 39 42); background:rgb(39 39 42); }
+.tpips-image-card img { display:block; width:100%; aspect-ratio:242/241; object-fit:cover; }
+.tpips-image-card figcaption { padding:.55rem .65rem; text-align:center; font-size:.75rem; color:rgb(113 113 122); }
+.tpips-data-table td { vertical-align:middle; }
+.tpips-score { display:inline-block; min-width:6.8rem; font-size:.82rem; }
+.tpips-score strong { display:block; font-family:"JetBrains Mono",monospace; color:rgb(24 24 27); }
+.dark .tpips-score strong { color:white; }
+.tpips-score small { display:block; color:rgb(113 113 122); }
+.tpips-prompt-special { border-left:3px solid rgb(99 102 241); }
+@media(max-width:700px) { .tpips-method-grid { grid-template-columns:1fr; } .tpips-prompt-list { grid-template-columns:1fr; } }
