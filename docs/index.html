@@ -273,32 +273,6 @@
         <div class="pipe-step"><span>4</span><h4>Translate</h4><p>Map every score to a 0–100% quality tier</p></div>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-5 mt-10">
-        <div class="card p-6">
-          <div class="card-kicker">Hardware &amp; environment</div>
-          <h4 class="card-h">Fitting an 8B-parameter judge</h4>
-          <p class="card-p">Google Colab on NVIDIA <strong>L4 / A100</strong> GPUs. LPIPS runs on the GPU in float32. The
-            TPIPS embedder (Qwen3-VL-8B + LoRA, ~8.2B params) is loaded under a temporary half-precision default dtype —
-            <code>bfloat16</code> on CPU in the first run, <code>float16</code> on CUDA in the dataset runs — with
-            <code>torchao</code> installed for quantization kernels.</p>
-        </div>
-        <div class="card p-6">
-          <div class="card-kicker">Metric extraction</div>
-          <h4 class="card-h">One helper, every metric</h4>
-          <p class="card-p">A single <code>compute_all_metrics()</code> scores each pair: PSNR/SSIM on the raw float arrays,
-            LPIPS on <code>1×3×H×W</code> tensors rescaled to [−1, 1], TPIPS on 8-bit PIL images. <code>plot_sweep_grid()</code>
-            renders the reference/distorted grid and the score table for each sweep.</p>
-        </div>
-        <div class="card p-6">
-          <div class="card-kicker">Precision handling</div>
-          <h4 class="card-h">No more dtype crashes</h4>
-          <p class="card-p">Half-precision defaults leaked into LPIPS and crashed it, so LPIPS is explicitly cast back to
-            <code>float32</code>, and the TPIPS call is wrapped in <code>torch.inference_mode()</code> +
-            <code>torch.autocast</code> to bridge 32-bit PIL preprocessing with the 16-bit model. Scores are pulled out with
-            <code>.item()</code> and rounded.</p>
-        </div>
-      </div>
-
       <h3 class="sub-h mt-14">Seven distortion families, ten tests</h3>
       <div class="table-wrap mt-4">
         <table class="data-table" id="distortionTable">
@@ -644,6 +618,119 @@ df_shift = plot_sweep_grid(img_ref, apply_translation, levels=[1, 2, 4, 8],
   url    = {https://mahideshpande.github.io/when-metrics-disagree/}
 }</code></pre>
     </section>
+
+    <!-- ============================== TPIPS MULTI-PROMPT EXPLORER ============================== -->
+    <section id="tpips-explorer" class="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/40 py-16 sm:py-20">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="section-label">Appendix · Prompt-conditioned perception</div>
+        <h2 class="section-title">Beyond Static Metrics: TPIPS Multi-Prompt Exploration</h2>
+        <p class="section-lede">Use text prompts to ask the same vision-language judge about different kinds of visual change.</p>
+
+        <div class="callout mt-8 max-w-4xl">
+          <div class="callout-title">Why the universal table uses only one TPIPS score</div>
+          <p class="!mb-0">The main table forces TPIPS to use the static generic prompt <code>factor="overall"</code>. That does not represent the full behavior of prompt-conditioned perception: on Gaussian noise, for example, the generic score can stay relatively flat while text prompts tuned to <em>film grain</em> or <em>texture clarity</em> respond much more strongly. TPIPS is a multimodal Qwen3-VL-8B embedding judge; its text prompts act as attention-steering factors that isolate visual properties.</p>
+        </div>
+
+        <div class="flex flex-wrap gap-3 my-5">
+          <a class="btn-link" href="https://github.com/MahiDeshpande/when-metrics-disagree" target="_blank" rel="noopener">Open repository</a>
+          <a class="btn-link" href="https://colab.research.google.com/github/MahiDeshpande/when-metrics-disagree/blob/main/when_metrics_disagree_ILSVRC2012_val_00000464.ipynb" target="_blank" rel="noopener">Open notebook in Colab</a>
+        </div>
+        <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-4xl">The raw score tables, complete experiment notebooks, and dataset scripts are open-sourced in this repository.</p>
+
+        <details class="tpips-method card mt-8">
+          <summary>View the 5-prompt evaluation framework</summary>
+          <div class="tpips-method-grid">
+            <div>
+              <h3>3 general baselines</h3>
+              <p>Held constant across all distortion families:</p>
+              <ul><li><code>overall</code></li><li><code>subject structure</code></li><li><code>image quality</code></li></ul>
+            </div>
+            <div>
+              <h3>2 distortion-specific prompts</h3>
+              <div class="tpips-prompt-list">
+                <div><b>Gaussian noise</b><span>film grain · texture clarity</span></div>
+                <div><b>Gaussian blur</b><span>sharpness · fine details</span></div>
+                <div><b>JPEG compression</b><span>compression artifacts · blockiness</span></div>
+                <div><b>Spatial translation</b><span>object positioning · camera angle</span></div>
+                <div><b>Brightness</b><span>lighting warmth · exposure</span></div>
+                <div><b>Contrast</b><span>dynamic range · shadow detail</span></div>
+                <div><b>Saturation</b><span>color vividness · color fidelity</span></div>
+                <div><b>Rotation</b><span>orientation · rotational alignment</span></div>
+                <div><b>Crop + resize</b><span>field of view · framing</span></div>
+                <div><b>Color hue shift</b><span>color hue · color temperature</span></div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <div class="card mt-8 p-4 sm:p-6">
+          <div class="flex flex-col xl:flex-row xl:items-end gap-5 justify-between">
+            <div class="min-w-0 xl:flex-1">
+              <div class="ctrl-label">Distortion</div>
+              <div id="tpipsDistortionTabs" class="flex flex-wrap gap-2"></div>
+            </div>
+            <div class="tpips-severity-control">
+              <div class="flex items-baseline justify-between gap-4">
+                <div class="ctrl-label !mb-0">Severity</div>
+                <span id="tpipsSeverityLabel" class="mono text-sm font-semibold text-indigo-600 dark:text-indigo-400"></span>
+              </div>
+              <input id="tpipsSeverity" type="range" min="0" max="3" step="1" value="0" class="w-full accent-indigo-600" aria-label="TPIPS distortion severity" />
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 mt-6">
+            <figure class="tpips-image-card">
+              <img src="assets/img/ILSVRC2012_val_00000464/ref.webp" alt="Reference image ILSVRC2012 val 00000464" />
+              <figcaption>Reference · ILSVRC2012_val_00000464.JPEG</figcaption>
+            </figure>
+            <figure class="tpips-image-card">
+              <img id="tpipsDistortedImage" alt="Prompt-conditioned TPIPS distorted sample" />
+              <figcaption id="tpipsDistortedCaption">Distorted sample</figcaption>
+            </figure>
+          </div>
+
+          <div class="mt-6">
+            <div class="ctrl-label">TPIPS distance by prompt <span class="normal-case tracking-normal font-normal">(lower is more similar; human tiers use the translation-table ranges)</span></div>
+            <div class="table-wrap" style="border-width:0">
+              <table class="data-table tpips-data-table" id="tpipsScoreTable"></table>
+            </div>
+            <p id="tpipsDynamicNote" class="mt-3 text-xs text-zinc-500 dark:text-zinc-400"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
+      <details class="implementation-details not-prose">
+        <summary>Implementation &amp; environment notes</summary>
+        <p class="implementation-intro">Optional reproducibility details for readers interested in the compute environment and metric extraction code.</p>
+        <div class="grid md:grid-cols-3 gap-5 mt-5">
+          <div class="card p-6">
+            <div class="card-kicker">Hardware &amp; environment</div>
+            <h4 class="card-h">Fitting an 8B-parameter judge</h4>
+            <p class="card-p">Google Colab on NVIDIA <strong>L4 / A100</strong> GPUs. LPIPS runs on the GPU in float32. The
+              TPIPS embedder (Qwen3-VL-8B + LoRA, ~8.2B params) is loaded under a temporary half-precision default dtype —
+              <code>bfloat16</code> on CPU in the first run, <code>float16</code> on CUDA in the dataset runs — with
+              <code>torchao</code> installed for quantization kernels.</p>
+          </div>
+          <div class="card p-6">
+            <div class="card-kicker">Metric extraction</div>
+            <h4 class="card-h">One helper, every metric</h4>
+            <p class="card-p">A single <code>compute_all_metrics()</code> scores each pair: PSNR/SSIM on the raw float arrays,
+              LPIPS on <code>1×3×H×W</code> tensors rescaled to [−1, 1], TPIPS on 8-bit PIL images. <code>plot_sweep_grid()</code>
+              renders the reference/distorted grid and the score table for each sweep.</p>
+          </div>
+          <div class="card p-6">
+            <div class="card-kicker">Precision handling</div>
+            <h4 class="card-h">No more dtype crashes</h4>
+            <p class="card-p">Half-precision defaults leaked into LPIPS and crashed it, so LPIPS is explicitly cast back to
+              <code>float32</code>, and the TPIPS call is wrapped in <code>torch.inference_mode()</code> +
+              <code>torch.autocast</code> to bridge 32-bit PIL preprocessing with the 16-bit model. Scores are pulled out with
+              <code>.item()</code> and rounded.</p>
+          </div>
+        </div>
+      </details>
+    </section>
   </main>
 
   <footer class="border-t border-zinc-200 dark:border-zinc-800">
@@ -653,6 +740,7 @@ df_shift = plot_sweep_grid(img_ref, apply_translation, levels=[1, 2, 4, 8],
     </div>
   </footer>
 
+  <script src="tpips-data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

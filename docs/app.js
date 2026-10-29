@@ -788,6 +788,83 @@
   }
 
   // ------------------------------------------------------------------
+  // Prompt-conditioned TPIPS explorer (sample 00000464).
+  // ------------------------------------------------------------------
+  const TPIPS_DISTORTIONS = [
+    ['Gaussian Noise', 'gaussian_noise'], ['Gaussian Blur', 'gaussian_blur'],
+    ['JPEG Compression', 'jpeg'], ['Spatial Translation', 'translation'],
+    ['Brightness Shift', 'brightness'], ['Contrast Alterations', 'contrast'],
+    ['Saturation Alterations', 'saturation'], ['Spatial Rotation', 'rotation'],
+    ['Crop + Resize', 'crop_resize'], ['Color Hue Shift', 'hue'],
+  ];
+  const tpipsState = { distortion: 0, level: 0 };
+
+  function promptName(header) {
+    const match = header.match(/TPIPS \((.*)\) ↓$/);
+    return match ? match[1] : header;
+  }
+
+  function initTpipsExplorer() {
+    const tabs = $('#tpipsDistortionTabs');
+    if (!tabs || !window.TPIPS_00464_RESULTS) return;
+    tabs.innerHTML = TPIPS_DISTORTIONS.map(([name], i) => `<button class="tab-btn" data-tpips-dist="${i}">${esc(name)}</button>`).join('');
+    tabs.addEventListener('click', (e) => {
+      const button = e.target.closest('[data-tpips-dist]');
+      if (!button) return;
+      tpipsState.distortion = +button.dataset.tpipsDist;
+      tpipsState.level = 0;
+      renderTpipsExplorer();
+    });
+    $('#tpipsSeverity').addEventListener('input', (e) => {
+      tpipsState.level = +e.target.value;
+      renderTpipsExplorer();
+    });
+    renderTpipsExplorer();
+  }
+
+  function renderTpipsExplorer() {
+    const tabs = $$('#tpipsDistortionTabs .tab-btn');
+    tabs.forEach((button, i) => button.classList.toggle('active', i === tpipsState.distortion));
+
+    const result = window.TPIPS_00464_RESULTS[tpipsState.distortion];
+    const rowCount = result.rows.length;
+    tpipsState.level = Math.min(tpipsState.level, rowCount - 1);
+    const slider = $('#tpipsSeverity');
+    slider.max = String(rowCount - 1);
+    slider.value = String(tpipsState.level);
+
+    const [, assetId] = TPIPS_DISTORTIONS[tpipsState.distortion];
+    const severityLabel = result.headers[1].replace(/\s*\(.*$/, '').trim();
+    $('#tpipsSeverityLabel').textContent = `${severityLabel}: ${result.rows[tpipsState.level][0]}`;
+
+    const image = $('#tpipsDistortedImage');
+    image.src = `assets/img/ILSVRC2012_val_00000464/${assetId}_${tpipsState.level}.webp`;
+    $('#tpipsDistortedCaption').textContent = `${result.name} · level ${tpipsState.level + 1}: ${result.rows[tpipsState.level][0]}`;
+
+    const promptHeaders = result.headers.slice(2, 7);
+    $('#tpipsScoreTable').innerHTML = `<thead><tr><th>Prompt condition</th><th class="num">TPIPS distance</th><th>Human-perception translation</th></tr></thead><tbody>` + promptHeaders.map((header, i) => {
+      const name = promptName(header);
+      const value = +result.rows[tpipsState.level][i + 1];
+      const special = i >= 3;
+      let interpretation;
+      let tier;
+      let range;
+      if (value <= 0.05) {
+        interpretation = 'Indistinguishable'; tier = 0; range = '0.00–0.05';
+      } else if (value <= 0.15) {
+        interpretation = 'Slight difference'; tier = 1; range = '0.05–0.15';
+      } else if (value <= 0.30) {
+        interpretation = 'Noticeable difference'; tier = 2; range = '0.15–0.30';
+      } else {
+        interpretation = 'Heavy difference'; tier = 3; range = '> 0.30';
+      }
+      return `<tr class="${special ? 'tpips-prompt-special' : ''}"><td><div class="font-semibold text-zinc-900 dark:text-white">${esc(name)}</div><div class="text-xs text-zinc-500">${i === 0 ? 'Generic baseline' : i < 3 ? 'General baseline' : 'Distortion-specific dynamic prompt'}</div></td><td class="num mono"><span class="tier-pill tier-${tier}">${value.toFixed(4)}</span></td><td><span class="tpips-score"><strong>${interpretation}</strong><small>Translation-table range: ${range}</small></span></td></tr>`;
+    }).join('') + '</tbody>';
+
+    $('#tpipsDynamicNote').textContent = `At the selected severity, prompts that explicitly name ${promptHeaders[3] ? promptName(promptHeaders[3]) : 'the distortion'} and ${promptHeaders[4] ? promptName(promptHeaders[4]) : 'its visible structure'} are evaluated alongside the three constant baselines.`;
+  }
+
+  // ------------------------------------------------------------------
   async function main() {
     initChrome();
     try {
@@ -809,6 +886,7 @@
     renderFailures();
     initIso();
     renderDisagreements();
+    initTpipsExplorer();
   }
 
   main();
