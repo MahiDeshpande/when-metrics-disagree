@@ -104,6 +104,7 @@ def parse_notebook_tpips(root: Path) -> dict[tuple[str, str, float], float]:
             title = title_match.group(1)
             canonical_title = {
                 "Gaussian Noise": "Gaussian Noise",
+                "Gaussian Noise Sensitivity": "Gaussian Noise",
                 "Gaussian Blur": "Gaussian Blur",
                 "JPEG Compression": "JPEG Compression",
                 "Spatial Translation": "Spatial Translation",
@@ -113,6 +114,7 @@ def parse_notebook_tpips(root: Path) -> dict[tuple[str, str, float], float]:
                 "Spatial Rotation": "Spatial Rotation",
                 "Crop + Resize": "Crop + Resize",
                 "Color Shift (Hue)": "Hue Shift",
+                "Color Shift": "Hue Shift",
                 "Hue Shift": "Hue Shift",
             }.get(title)
             if canonical_title is None:
@@ -142,6 +144,87 @@ def parse_notebook_tpips(root: Path) -> dict[tuple[str, str, float], float]:
                         except (TypeError, ValueError):
                             continue
                         values[(image_id, canonical_title, parameter)] = distance
+    return values
+
+
+def parse_sketch_metrics(path: Path) -> dict[tuple[str, float], dict[str, float]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    values = {}
+    titles = {
+        "Gaussian Noise": "Gaussian Noise",
+        "Gaussian Noise Sensitivity": "Gaussian Noise",
+        "Gaussian Blur": "Gaussian Blur",
+        "JPEG Compression": "JPEG Compression",
+        "Spatial Translation": "Spatial Translation",
+        "Brightness Shift": "Brightness Shift",
+        "Contrast Alterations": "Contrast Alterations",
+        "Saturation Alterations": "Saturation Alterations",
+        "Spatial Rotation": "Spatial Rotation",
+        "Crop + Resize": "Crop + Resize",
+        "Color Shift (Hue)": "Hue Shift",
+        "Color Shift": "Hue Shift",
+        "Hue Shift": "Hue Shift",
+    }
+    metric_columns = {
+        "PSNR": "PSNR",
+        "SSIM": "SSIM",
+        "LPIPS-Alex": "LPIPS-Alex",
+        "LPIPS-VGG": "LPIPS-VGG",
+        "TPIPS Distance": "TPIPS Distance",
+    }
+
+    for cell in payload.get("cells", []):
+        source = "".join(cell.get("source", []))
+        title_match = re.search(r'exp_title="([^"]+)"', source)
+        if not title_match and "TEST 1" in source:
+            title_match = re.match(r".*TEST 1:.*", source, re.DOTALL)
+        if title_match:
+            title_text = title_match.group(1)
+        else:
+            continue
+        distortion = titles.get(title_text)
+        if distortion is None:
+            continue
+
+        for output in cell.get("outputs", []):
+            html_parts = output.get("data", {}).get("text/html", [])
+            if not html_parts:
+                continue
+            html = "".join(html_parts)
+            if "PSNR" not in html or "TPIPS Distance" not in html:
+                continue
+            for table in pd.read_html(StringIO(html)):
+                parameter_column = next(
+                    column for column in table.columns
+                    if isinstance(column, str)
+                    and "PSNR" not in column
+                    and "SSIM" not in column
+                    and "LPIPS" not in column
+                    and "TPIPS" not in column
+                    and column != "Unnamed: 0"
+                )
+                for _, row in table.iterrows():
+                    try:
+                        parameter = float(row[parameter_column])
+                    except (TypeError, ValueError):
+                        continue
+                    record = {}
+                    for output_name, column in metric_columns.items():
+                        matching = next(
+                            (
+                                table_column for table_column in table.columns
+                                if isinstance(table_column, str)
+                                and output_name.split()[0] in table_column
+                            ),
+                            None,
+                        )
+                        if matching is not None:
+                            try:
+                                record[column] = float(row[matching])
+                            except (TypeError, ValueError):
+                                pass
+                    if record:
+                        values[(distortion, parameter)] = record
     return values
 
 
@@ -179,6 +262,7 @@ def load_master() -> pd.DataFrame:
 
     rows = []
     tpips = parse_notebook_tpips(ROOT)
+    sketch_metrics = parse_sketch_metrics(ROOT / "when_metrics_disagree_sketch.ipynb")
     for distortion_id, levels_by_image in source["results"].items():
         distortion = next(
             item for item in source["distortions"] if item["id"] == distortion_id
@@ -197,6 +281,8 @@ def load_master() -> pd.DataFrame:
                     "LPIPS-Alex": level["lpips_alex"],
                     "LPIPS-VGG": level["lpips_vgg"],
                 }
+                if image_id == "img_ref":
+                    row.update(sketch_metrics.get((DISTORTION_ALIASES[distortion_id], parameter_value), {}))
                 tpips_value = tpips.get((image_id, DISTORTION_ALIASES[distortion_id], parameter_value))
                 if tpips_value is None:
                     exported_tpips = parse_exported_tpips(TPIPS_JS)
